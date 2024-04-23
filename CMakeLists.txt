@@ -92,3 +92,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
+
+# ---img---
+FetchContent_Declare(
+    img
+    GIT_REPOSITORY https://github.com/CoolLibs/img
+    GIT_TAG da961a78b622db4f4b26df690b38ac3054e61806
+)
+
+FetchContent_MakeAvailable(img)
+target_link_libraries(${PROJECT_NAME} PRIVATE img::img)

@@ -19,10 +19,12 @@ public:
 private:
     void render();
 
-    int _width;
-    int _height;
+    int _width {};
+    int _height {};
     double _previousTime {};
-    float _viewSize;
+    float _viewSize {};
 
     // Add your variables here
+    GLuint _texture {};
+    float _angle {};
 };
