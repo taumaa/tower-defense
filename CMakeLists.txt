@@ -102,3 +102,18 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(img)
 target_link_libraries(${PROJECT_NAME} PRIVATE img::img)
+
+# ---simpleText--- (fork from https://github.com/podgorskiy/SimpleText)
+# Optional library for rendering text
+FetchContent_Declare(
+    simpletext
+    GIT_REPOSITORY https://github.com/dsmtE/SimpleText/
+)
+
+FetchContent_MakeAvailable(simpletext)
+
+# Create an interface library for simpletext
+add_library(simpletext INTERFACE)
+target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/include)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE simpletext)

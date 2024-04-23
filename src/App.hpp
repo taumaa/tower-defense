@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <simpletext.h>
 
 class App {
 public:
@@ -27,4 +28,6 @@ private:
     // Add your variables here
     GLuint _texture {};
     float _angle {};
+
+    SimpleText TextRenderer {};
 };
