@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <img/img.hpp>
 
+#include <sstream>
+
 #include "simpletext.h"
 #include "utils.hpp"
 #include "GLHelpers.hpp"

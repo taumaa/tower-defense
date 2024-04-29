@@ -16,7 +16,8 @@ GLuint loadTexture(uint8_t const* data, int width, int height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    // Error on MACOS (segmentation fault) when using glGenerateMipmap
+    // glGenerateMipmap(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_2D);
 
     return textureId;
