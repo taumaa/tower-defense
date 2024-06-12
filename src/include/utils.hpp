@@ -31,3 +31,6 @@ std::ostream& operator<<(std::ostream& os, std::vector<T> const& vec)
     }
     return os << vec.back() << ']';
 }
+
+bool validateRGB(const std::string &line);
+bool fileExists(const std::string &path);

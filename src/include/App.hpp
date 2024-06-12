@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <simpletext.h>
+#include "Game.hpp"
 
 class App {
 public:
@@ -19,6 +20,7 @@ public:
 
 private:
     void render();
+    void renderMenu();
 
     int _width {};
     int _height {};
@@ -30,4 +32,7 @@ private:
     float _angle {};
 
     SimpleText TextRenderer {};
+
+    Game game;
+
 };

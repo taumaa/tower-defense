@@ -3,5 +3,12 @@ bin/
 .vs/
 .vscode/
 .cache/
-
+CMakeFiles/
+cmake-build-debug/
+_deps/
+maps/
+CMakeCache.txt
+cmake_install.cmake
+.idea/
+Makefile
 .DS_Store

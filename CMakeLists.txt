@@ -6,18 +6,18 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Be able to use fetch content to get libraries
 include(FetchContent)
 
-project("OpenGL-Template")
+project("output")
 
 add_executable(${PROJECT_NAME})
 
 # Set the folder where the executable is created
-# To be able split executables form other temporary build files
+# To be able to split executables from other temporary build files
 set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}
 )
 
-# Set the c++ version
+# Set the C++ version
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # Prevents compiler-specific extensions to C++ because they might allow code to compile on your machine but not on other people's machine
@@ -37,10 +37,13 @@ target_sources(${PROJECT_NAME} PRIVATE ${SRC_FILES})
 # Set src folder as an include directory to be able to include files from the same folder (put .cpp and .hpp files in the same folder)
 target_include_directories(${PROJECT_NAME} PRIVATE "src/")
 
+# Copy all files from the src/maps folder to the build/maps folder
+file(GLOB MAP_FILES "${CMAKE_SOURCE_DIR}/src/maps/*")
+file(COPY ${MAP_FILES} DESTINATION ${CMAKE_BINARY_DIR}/maps)
 
 # Pass the CMAKE_SOURCE_DIR to the code, so that we can make our paths relative to it---
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    CMAKE_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"
+        CMAKE_SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"
 )
 
 # ---Add libraries---
@@ -86,8 +89,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glad)
 
 ## ---glm---
 FetchContent_Declare(
-    glm
-    GIT_REPOSITORY https://github.com/g-truc/glm
+        glm
+        GIT_REPOSITORY https://github.com/g-truc/glm
 )
 
 FetchContent_MakeAvailable(glm)
@@ -95,9 +98,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
 # ---img---
 FetchContent_Declare(
-    img
-    GIT_REPOSITORY https://github.com/CoolLibs/img
-    GIT_TAG da961a78b622db4f4b26df690b38ac3054e61806
+        img
+        GIT_REPOSITORY https://github.com/CoolLibs/img
+        GIT_TAG da961a78b622db4f4b26df690b38ac3054e61806
 )
 
 FetchContent_MakeAvailable(img)
@@ -106,8 +109,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE img::img)
 # ---simpleText--- (fork from https://github.com/podgorskiy/SimpleText)
 # Optional library for rendering text
 FetchContent_Declare(
-    simpletext
-    GIT_REPOSITORY https://github.com/dsmtE/SimpleText/
+        simpletext
+        GIT_REPOSITORY https://github.com/dsmtE/SimpleText/
 )
 
 FetchContent_MakeAvailable(simpletext)
@@ -115,5 +118,20 @@ FetchContent_MakeAvailable(simpletext)
 # Create an interface library for simpletext
 add_library(simpletext INTERFACE)
 target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/include)
+target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/maps)
+
+# SIL for PNG
+include(FetchContent)
+FetchContent_Declare(
+        sil
+        GIT_REPOSITORY https://github.com/JulesFouchy/Simple-Image-Lib
+        GIT_TAG 89bd175cd55fb6daa9e99b218e869c3d516043f4
+)
+FetchContent_MakeAvailable(sil)
+
+# Link the library into your project
+target_link_libraries(${PROJECT_NAME} PRIVATE sil::sil)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE simpletext)
+
+

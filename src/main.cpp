@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-#include "App.hpp"
+#include "include/App.hpp"
 
 namespace {
     App& window_as_app(GLFWwindow* window)
