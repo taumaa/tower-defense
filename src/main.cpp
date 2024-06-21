@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "include/App.hpp"
+#include "include/const.h"
 
 namespace {
     App& window_as_app(GLFWwindow* window)
@@ -38,7 +39,7 @@ int main() {
 // #endif
 
     // Create window
-    GLFWwindow* window { glfwCreateWindow(1280, 720, "Window", nullptr, nullptr) };
+    GLFWwindow* window { glfwCreateWindow(WIDTH, HEIGHT, "Window", nullptr, nullptr) };
     if (!window) {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();

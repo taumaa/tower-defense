@@ -1,6 +1,9 @@
 #include "include/Map.hpp"
 #include "include/Square.hpp"
+#include "include/Node.hpp"
 #include "include/Graph.hpp"
+#include "include/const.h"
+#include "include/GLHelpers.hpp"
 
 #include <glad/glad.h>
 #include <fstream>
@@ -8,12 +11,6 @@
 #include <sil/sil.hpp>
 #include <string>
 #include <sstream>
-
-
-bool Map::validateItd(std::string itdPath) {
-    // TODO: A implementer
-    return true;
-}
 
 bool colorMatch(glm::vec3 color1, glm::vec3 color2) {
     /*
@@ -32,6 +29,14 @@ bool colorMatch(glm::vec3 color1, glm::vec3 color2) {
     bool res = (diffR <= tolerance && diffG <= tolerance && diffB <= tolerance);
 
     return res;
+}
+
+void Map::switchTowerMode() {
+    if (!towerMode && coins > 5) {
+        towerMode = true;
+    } else {
+        towerMode = false;
+    }
 }
 
 void Map::loadMapFromFile(std::string pngPath, std::string itdPath) {
@@ -89,15 +94,18 @@ void Map::loadMapFromFile(std::string pngPath, std::string itdPath) {
             // Get the color of the pixel
             glm::vec3 color = imgFile.pixel(i, inverseHeight);
 
+            int uiX = i * SCALE + LEFT_MARGIN;
+            int uiY = j * SCALE + TOP_MARGIN;
+
             // Check if the color is the same as the inColor
             if (colorMatch(color, inColor)) {
-                row.push_back(Square(Square::IN));
+                row.push_back(Square(Square::IN, uiX, uiY));
             } else if (colorMatch(color, outColor)) {
-                row.push_back(Square(Square::OUT));
+                row.push_back(Square(Square::OUT, uiX, uiY));
             } else if (colorMatch(color, pathColor)) {
-                row.push_back(Square(Square::PATH));
+                row.push_back(Square(Square::PATH, uiX, uiY));
             } else {
-                row.push_back(Square(Square::EMPTY));
+                row.push_back(Square(Square::EMPTY, uiX, uiY));
             }
         }
         squares.push_back(row);
@@ -164,7 +172,37 @@ void Map::loadGraphFromFile(std::string itdPath) {
 
 }
 
+void Map::loadTextures() {
+
+    std::cout << "Loading textures" << std::endl;
+
+    img::Image grassImg {img::load(make_absolute_path("images/grass3.png", true), 3, false)};
+    grassTexture = loadTexture(grassImg);
+
+    img::Image pathImg {img::load(make_absolute_path("images/path.png", true), 3, false)};
+    pathTexture = loadTexture(pathImg);
+
+    img::Image inImg {img::load(make_absolute_path("images/in.png", true), 3, false)};
+    inTexture = loadTexture(inImg);
+
+    img::Image outImg {img::load(make_absolute_path("images/out.png", true), 3, false)};
+    outTexture = loadTexture(outImg);
+
+    img::Image hammerImg {img::load(make_absolute_path("images/hammer.png", true), 3, false)};
+    hammerTexture = loadTexture(hammerImg);
+
+}
+
+void Map::setup(std::string pngPath, std::string itdPath) {
+    this->loadMapFromFile(pngPath, itdPath);
+    this->loadGraphFromFile(itdPath);
+    this->loadTextures();
+}
+
 void Map::render() {
+    /*
+     * Utiliser LEFT_MARGIN et TOP_MARGIN pour calculer les marges à gauche et en haut
+     */
 
     // Couleurs en RGB
     auto getColor = [this](Square::SquareType type) -> glm::vec3 {
@@ -181,48 +219,140 @@ void Map::render() {
         }
     };
 
-    // Taille de la fenêtre en dur
-    int windowWidth = 1280;
-    int windowHeight = 720;
-
-    // Calculer les décalages pour centrer la grille
-    float offsetX = (windowWidth - (width * SCALE)) / 2.0f;
-    float offsetY = (windowHeight - (height * SCALE)) / 2.0f;
+    // Utiliser les marges pour aligner à gauche et en haut
+    float offsetX = LEFT_MARGIN;
+    float offsetY = HEIGHT - (height * SCALE) - TOP_MARGIN;
 
     // Dessiner chaque carré
     for (int x = 0; x < width; ++x) {
         for (int y = 0; y < height; ++y) {
             Square& square = squares[x][y]; // Accéder aux cases par colonne puis par ligne
 
-            glm::vec3 color = getColor(square.type);
-
-            // Calculer les coordonnées avec le décalage centré
+            // Calculer les coordonnées avec les marges
             float xPos = offsetX + x * SCALE;
             float yPos = offsetY + (height - y - 1) * SCALE; // Inverser y pour correspondre à l'axe vertical
 
-            // Dessiner le carré
-            glColor3f(color.r, color.g, color.b); // Normalisez les couleurs
-            glBegin(GL_QUADS);
+            if (square.type == Square::EMPTY) {
+                drawTexturedQuad(xPos, yPos, SCALE, SCALE, grassTexture, false, square.isHovered);
+            } else if (square.type == Square::PATH) {
+                drawTexturedQuad(xPos, yPos, SCALE, SCALE, pathTexture, false, square.isHovered);
+            } else if (square.type == Square::IN) {
+                drawTexturedQuad(xPos, yPos, SCALE, SCALE, inTexture, false, square.isHovered);
+            } else if (square.type == Square::OUT) {
+                drawTexturedQuad(xPos, yPos, SCALE, SCALE, outTexture, true, square.isHovered);
+            } else {
+                glm::vec3 color = getColor(square.type);
+
+                // Dessiner le carré coloré
+                glColor3f(color.r, color.g, color.b); // Normalisez les couleurs
+                glBegin(GL_QUADS);
                 glVertex2f(xPos, yPos);
                 glVertex2f(xPos + SCALE, yPos);
                 glVertex2f(xPos + SCALE, yPos + SCALE);
                 glVertex2f(xPos, yPos + SCALE);
-            glEnd();
+                glEnd();
+            }
+        }
+    }
+
+
+    /*
+     * Render des tours
+     */
+
+    if (towers.size() > 0) {
+        for (auto& tower : towers) {
+            tower.render();
+        }
+    }
+
+    if (enemies.size() > 0) {
+        for (auto& enemy : enemies) {
+            enemy.render();
+        }
+    }
+
+    if (lives <= 0) {
+        gameOver = true;
+    }
+
+    // Indicatif build mode
+    if (towerMode) {
+        drawTexturedQuad(WIDTH - 100, HEIGHT - 100, SCALE, SCALE, hammerTexture, true, false);
+    }
+
+}
+
+void Map::createEnemy() {
+    Enemy enemy(2, 100, graph.findNodeById(0), graph, &lives);
+
+    Node* inNode = graph.findNodeById(0);
+    Node* outNode = graph.getLastNode();
+
+    std::vector<int> path = graph.getPath(*inNode, *outNode);
+
+    enemy.path = path;
+
+    enemy.nextNode = graph.findNodeById(path[0]);
+
+    enemies.push_back(enemy);
+
+}
+
+void Map::updateEnemies() {
+    for (auto& enemy : enemies) {
+        enemy.update(elapsedTime);
+    }
+}
+
+
+
+void Map::updateHoverSquare() {
+    if (towerMode) {
+        // On itère sur les squares
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Square& square = squares[i][j];
+                if (xCursor >= square.uiX && xCursor <= square.uiX + SCALE && yCursor >= square.uiY && yCursor <= square.uiY + SCALE) {
+                    square.isHovered = true;
+                } else {
+                    square.isHovered = false;
+                }
+            }
+        }
+
+    }
+}
+
+void Map::placeTower() {
+    if (towerMode && coins >= 5) {
+
+        // On itère sur les squares
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                Square& square = squares[i][j];
+                if (square.isHovered && square.type == Square::EMPTY) {
+
+                    Tower tower(&square);
+                    towers.push_back(tower);
+                    coins -= 5;
+
+                    std::cout << "Tower placed" << std::endl;
+                }
+            }
         }
     }
 }
 
-void Map::setup(std::string pngPath, std::string itdPath) {
-    this->loadMapFromFile(pngPath, itdPath);
-    this->loadGraphFromFile(itdPath);
-}
+void Map::update() {
+    // Pour mettre tout ce qui doit etre check à chaque frame mais qui n'est pas du render
 
-void Map::test() {
-    std::cout << "TEST IS ACTIVATED" << std::endl; // ne pas delete
+    enemyTimer += elapsedTime;
 
-    std::cout << "X and Y of 2: " << graph.nodes[2].x << " " << graph.nodes[2].y << std::endl;
-    std::cout << "X and Y of 3: " << graph.nodes[3].x << " " << graph.nodes[3].y << std::endl;
-    std::cout << "X and Y of 4: " << graph.nodes[4].x << " " << graph.nodes[4].y << std::endl;
-    std::cout << "X and Y of 5: " << graph.nodes[5].x << " " << graph.nodes[5].y << std::endl;
+    if (enemyTimer > 5.0) {
+        createEnemy();
+        enemyTimer = 0;
+    }
 
+    updateEnemies();
 }

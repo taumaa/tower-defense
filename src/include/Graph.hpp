@@ -9,16 +9,16 @@
 class Graph {
 public:
     Graph();
-    void addNode(int id, double x, double y);
+    void addNode(int id, int x, int y);
     void addEdge(int sourceId, int destinationId, double weight);
-    std::vector<int> dijkstra(const Node& source, const Node& destination);
+    std::vector<int> getPath(const Node& source, const Node& destination);
 
     std::vector<Node> nodes;
     std::vector<Edge> edges;
 
-private:
-
     Node* findNodeById(int id);
+    Node* getLastNode();
+
     std::unordered_map<int, std::vector<Edge>> adjacencyList;
     void buildAdjacencyList();
 };

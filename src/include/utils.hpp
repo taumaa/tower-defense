@@ -2,7 +2,16 @@
 #include <filesystem>
 #include <glm/glm.hpp>
 
+
+#include <glad/glad.h>
+#include <fstream>
+#include <iostream>
+#include <sil/sil.hpp>
+#include <string>
+#include <sstream>
+
 std::filesystem::path make_absolute_path(std::filesystem::path const& path, bool check_path_exists = true);
+void drawTexturedQuad(float x, float y, float width, float height, GLuint texture, bool flipVertical = false, bool hasBorder = false);
 
 template <glm::length_t N, typename T, glm::qualifier Q>
 std::ostream& operator<<(std::ostream& os,glm::vec<N, T, Q> const& vec) {

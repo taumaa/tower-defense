@@ -2,13 +2,14 @@
 #include <limits>
 #include <unordered_map>
 #include <set>
+#include <iostream>
 #include <algorithm>
 
 // Constructeur pour initialiser un graphe vide
 Graph::Graph() {}
 
 // Ajoute un nœud au graphe
-void Graph::addNode(int id, double x, double y) {
+void Graph::addNode(int id, int x, int y) {
     nodes.emplace_back(id, x, y);
 }
 
@@ -16,6 +17,7 @@ void Graph::addNode(int id, double x, double y) {
 void Graph::addEdge(int sourceId, int destinationId, double weight) {
     Node* source = findNodeById(sourceId);
     Node* destination = findNodeById(destinationId);
+
     if (source && destination) {
         edges.emplace_back(source, destination, weight);
         buildAdjacencyList();
@@ -32,6 +34,15 @@ Node* Graph::findNodeById(int id) {
     return nullptr;
 }
 
+// Renvoie le dernier nœud du graphe
+Node* Graph::getLastNode() {
+    for (auto& node : nodes) {
+        if (node.getId() == nodes.size() - 1) {
+            return &node;
+        }
+    }
+}
+
 // Construit la liste d'adjacence à partir des arêtes
 void Graph::buildAdjacencyList() {
     adjacencyList.clear();
@@ -40,45 +51,13 @@ void Graph::buildAdjacencyList() {
     }
 }
 
-// Algorithme de Dijkstra pour trouver le plus court chemin entre deux nœuds
-std::vector<int> Graph::dijkstra(const Node& source, const Node& destination) {
-    std::unordered_map<int, double> distances;
-    std::unordered_map<int, int> previous;
-    std::set<std::pair<double, int>> nodesToVisit;
+std::vector<int> Graph::getPath(const Node& source, const Node& destination) {
 
-    for (const auto& node : nodes) {
-        distances[node.getId()] = std::numeric_limits<double>::infinity();
-        previous[node.getId()] = -1;
+
+    std::vector<int> path;
+    for (int i = source.getId() + 1; i <= destination.getId(); i++) {
+        path.push_back(i);
     }
 
-    distances[source.getId()] = 0.0;
-    nodesToVisit.insert({0.0, source.getId()});
-
-    while (!nodesToVisit.empty()) {
-        int currentNodeId = nodesToVisit.begin()->second;
-        nodesToVisit.erase(nodesToVisit.begin());
-
-        if (currentNodeId == destination.getId()) {
-            std::vector<int> path;
-            for (int at = destination.getId(); at != -1; at = previous[at]) {
-                path.push_back(at);
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
-        }
-
-        for (const auto& edge : adjacencyList[currentNodeId]) {
-            int neighborId = edge.getDestination()->getId();
-            double newDist = distances[currentNodeId] + edge.getWeight();
-
-            if (newDist < distances[neighborId]) {
-                nodesToVisit.erase({distances[neighborId], neighborId});
-                distances[neighborId] = newDist;
-                previous[neighborId] = currentNodeId;
-                nodesToVisit.insert({newDist, neighborId});
-            }
-        }
-    }
-
-    return {}; // Retourne un chemin vide si aucun chemin n'est trouvé
+    return path;
 }

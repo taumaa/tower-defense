@@ -72,7 +72,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 # ---glad---
 FetchContent_Declare(
         glad
-        GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+        GIT_REPOSITORY https://github.com/Dav1dde/glad
 )
 
 FetchContent_GetProperties(glad)
@@ -119,6 +119,7 @@ FetchContent_MakeAvailable(simpletext)
 add_library(simpletext INTERFACE)
 target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/include)
 target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/maps)
+target_include_directories(simpletext SYSTEM INTERFACE ${simpletext_SOURCE_DIR}/images)
 
 # SIL for PNG
 include(FetchContent)

@@ -18,9 +18,13 @@ public:
     void cursor_position_callback(double xpos, double ypos);
     void size_callback(int width, int height);
 
+
 private:
     void render();
     void renderMenu();
+    void renderPause();
+    void renderGameOver();
+    void renderBackground();
 
     int _width {};
     int _height {};
@@ -34,5 +38,7 @@ private:
     SimpleText TextRenderer {};
 
     Game game;
+
+    bool inMainMenu {true};
 
 };
